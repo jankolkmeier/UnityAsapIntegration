@@ -1,0 +1,2 @@
+leftEyeIn_Out 1.00
+rightEyeIn_Out -1.00

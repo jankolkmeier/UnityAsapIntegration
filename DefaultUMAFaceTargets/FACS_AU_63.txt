@@ -1,0 +1,2 @@
+leftEyeUp_Down 0.83
+rightEyeUp_Down 0.83

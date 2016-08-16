@@ -1,0 +1,1 @@
+leftEyeUp_Down -0.84

@@ -1,0 +1,2 @@
+neckUp_Down 1.00
+headUp_Down -1.00

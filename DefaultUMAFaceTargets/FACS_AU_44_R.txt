@@ -1,0 +1,4 @@
+rightEyeOpen_Close -0.58
+browsIn 1.00
+rightBrowUp_Down -0.82
+midBrowUp_Down -1.00

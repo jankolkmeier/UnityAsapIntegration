@@ -1,0 +1,108 @@
+V_NULL null viseme -- no info
+V_SIL Viseme for silence.
+IKP_V_P p, b
+IKP_V_T t, d, k, g
+IKP_V_N n, @n, l, @l
+IKP_V_M m
+IKP_V_F f, v
+IKP_V_S s, z
+IKP_V_Z S, Z, tS, dZ
+IKP_V_R h, r, x, N
+IKP_V_C j, C
+IKP_V_E i:, I, e:, E:, E
+IKP_V_A a:, a
+IKP_V_O o:, O
+IKP_V_U u:, U
+IKP_V_Q @, 6
+IKP_V_Y y:, Y, 2:, 9
+DIS_V_AE_AX_AH ae, ax, ah
+DIS_V_AA aa
+DIS_V_AO ao
+DIS_V_EY_EH_UH ey, eh, uh
+DIS_V_ER er
+DIS_V_Y_IY_IH_IX y, iy, ih, ix
+DIS_V_W_UW w, uw
+DIS_V_OW ow
+DIS_V_AW aw
+DIS_V_OY oy
+DIS_V_AY ay
+DIS_V_H h
+DIS_V_R r
+DIS_V_L l
+DIS_V_S_Z s, z
+DIS_V_SH_CH_JH_ZH sh, ch, jh, zh
+DIS_V_TH_DH th, dh
+DIS_V_F_V f, v
+DIS_V_D_T_N d, t, n
+DIS_V_K_G_NG k, g, ng
+DIS_V_P_B_M p, b, m
+FACS_AU_1_R Inner brow raiser
+FACS_AU_1_L Inner brow raiser
+FACS_AU_2_R Outer brow raiser
+FACS_AU_2_L Outer brow raiser
+FACS_AU_4_R Brow Lowerer
+FACS_AU_4_L Brow Lowerer
+FACS_AU_5_R Upper Lid Raiser
+FACS_AU_5_L Upper Lid Raiser
+FACS_AU_6_R Cheek Raiser
+FACS_AU_6_L Cheek Raiser
+FACS_AU_7_R Lid Tightener
+FACS_AU_7_L Lid Tightener
+FACS_AU_9_R Nose Wrinkler
+FACS_AU_9_L Nose Wrinkler
+FACS_AU_10_R Upper Lip Raiser
+FACS_AU_10_L Upper Lip Raiser
+FACS_AU_11 Nasolabial Deepener
+FACS_AU_12_R Lip Corner Puller
+FACS_AU_12_L Lip Corner Puller
+FACS_AU_13_R Cheek Puffer
+FACS_AU_13_L Cheek Puffer
+FACS_AU_14_R Dimpler
+FACS_AU_14_L Dimpler
+FACS_AU_15_R Lip Corner Depressor
+FACS_AU_15_L Lip Corner Depressor
+FACS_AU_16 Lower Lip Depressor
+FACS_AU_17 Chin Raiser
+FACS_AU_18 Lip Puckerer
+FACS_AU_19 Tongue Show
+FACS_AU_20_R Lip stretcher
+FACS_AU_20_L Lip stretcher
+FACS_AU_22 Lip Funneler
+FACS_AU_23 Lip Tightener
+FACS_AU_24 Lip Pressor
+FACS_AU_25 Lips part
+FACS_AU_26 Jaw Drop
+FACS_AU_27 Mouth Stretch
+FACS_AU_28 Lip Suck
+FACS_AU_29 Jaw Thrust
+FACS_AU_30_R Jaw Sideways
+FACS_AU_30_L Jaw Sideways
+FACS_AU_41_R Lid droop // Glabella Lowerer 
+FACS_AU_41_L Lid droop // Glabella Lowerer 
+FACS_AU_42_R Inner Eyebrow Lowerer
+FACS_AU_42_L Inner Eyebrow Lowerer
+FACS_AU_43_R Eyes Closed
+FACS_AU_43_L Eyes Closed
+FACS_AU_44_R Eyebrow Gatherer // Squint?
+FACS_AU_44_L Eyebrow Gatherer // Squint?
+FACS_AU_45 Blink
+FACS_AU_46_R Wink
+FACS_AU_46_L Wink
+FACS_AU_51 Head turn left
+FACS_AU_52 Head turn right
+FACS_AU_53 Head up
+FACS_AU_54 Head down
+FACS_AU_55 Head tilt left
+FACS_AU_56 Head tilt right
+FACS_AU_57 Head forward
+FACS_AU_58 Head back
+FACS_AU_61_R Eyes turn left
+FACS_AU_61_L Eyes turn left
+FACS_AU_62_R Eyes turn right
+FACS_AU_62_L Eyes turn right
+FACS_AU_63_R Eyes up
+FACS_AU_63_L Eyes up
+FACS_AU_64_R Eyes down
+FACS_AU_64_L Eyes down
+smilemouth Smiling Mouth (BML Default)
+anger Anger (BML Default)

@@ -1,0 +1,3 @@
+jawOpen_Close 0.29
+tongueOut 0.58
+tongueUp_Down 0.16

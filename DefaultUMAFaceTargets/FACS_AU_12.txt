@@ -1,0 +1,2 @@
+leftMouthSmile_Frown 0.51
+rightMouthSmile_Frown 0.50

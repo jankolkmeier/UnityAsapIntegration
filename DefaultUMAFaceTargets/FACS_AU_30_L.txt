@@ -1,0 +1,2 @@
+jawOpen_Close 0.10
+jawLeft_Right 1.00

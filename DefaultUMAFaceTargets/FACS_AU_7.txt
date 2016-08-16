@@ -1,0 +1,2 @@
+leftEyeOpen_Close -0.47
+rightEyeOpen_Close -0.47

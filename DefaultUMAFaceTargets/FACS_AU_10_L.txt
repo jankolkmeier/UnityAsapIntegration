@@ -1,0 +1,3 @@
+mouthLeft_Right 0.38
+mouthUp_Down 0.70
+leftUpperLipUp_Down 0.50

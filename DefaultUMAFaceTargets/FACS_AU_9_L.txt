@@ -1,0 +1,2 @@
+leftLowerLipUp_Down 0.58
+leftUpperLipUp_Down 0.59

@@ -1,0 +1,5 @@
+mouthNarrow_Pucker 0.20
+leftLowerLipUp_Down 1.00
+rightLowerLipUp_Down 1.00
+leftUpperLipUp_Down -1.00
+rightUpperLipUp_Down -1.00

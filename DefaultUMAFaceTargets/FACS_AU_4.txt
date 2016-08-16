@@ -1,0 +1,3 @@
+leftBrowUp_Down -1.00
+rightBrowUp_Down -1.00
+midBrowUp_Down -1.00

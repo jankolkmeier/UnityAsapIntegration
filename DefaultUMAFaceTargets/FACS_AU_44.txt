@@ -1,0 +1,5 @@
+leftEyeOpen_Close -0.47
+rightEyeOpen_Close -0.44
+leftBrowUp_Down -0.99
+rightBrowUp_Down -0.73
+midBrowUp_Down -0.07

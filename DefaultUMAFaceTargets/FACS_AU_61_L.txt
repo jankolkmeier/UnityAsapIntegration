@@ -1,0 +1,1 @@
+leftEyeIn_Out -1.00

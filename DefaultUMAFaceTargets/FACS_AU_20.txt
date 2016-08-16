@@ -1,0 +1,6 @@
+leftMouthSmile_Frown -0.63
+rightMouthSmile_Frown -0.63
+leftLowerLipUp_Down 0.42
+rightLowerLipUp_Down 0.44
+leftUpperLipUp_Down -0.33
+rightUpperLipUp_Down -0.32

@@ -1,0 +1,5 @@
+mouthUp_Down -0.09
+mouthNarrow_Pucker 0.26
+rightMouthSmile_Frown 0.39
+rightLowerLipUp_Down 0.31
+rightUpperLipUp_Down -0.41
