@@ -9,22 +9,37 @@ namespace ASAP {
 
     public class ASAPManager : MonoBehaviour {
         
-        IMiddleware middleware;
+		public int worldUpdateFrequency = 30;
+		float nextWorldUpdate = 0.0f;
+		IMiddleware middleware;
+
+
         Dictionary<string, ASAPAgent> agents;
         Dictionary<string, AgentState> agentStates;
-        Dictionary<string, AgentRequest> agentRequests;
+		Dictionary<string, AgentRequest> agentRequests;
+		Dictionary<string, VJoint> worldObjects;
 
         void Awake() {
             agents = new Dictionary<string, ASAPAgent>();
             agentStates = new Dictionary<string, AgentState>();
-            agentRequests = new Dictionary<string, AgentRequest>();
+			agentRequests = new Dictionary<string, AgentRequest>();
+			worldObjects = new Dictionary<string, VJoint>();
             middleware = new STOMPMiddleware("stomp:tcp://127.0.0.1:61613", "topic://UnityAgentControl", "topic://UnityAgentFeedback", "admin", "password");
         }
 
         void Update() {
             ReadMessages();
             HandleRequests();
+
+			if (Time.time > nextWorldUpdate) {
+				UpdateWorld();
+			}
         }
+
+		void UpdateWorld() {
+			middleware.SendMessage(WorldUpdate.WriteUpdate(worldObjects));
+			nextWorldUpdate = Time.time + 1.0f / worldUpdateFrequency;
+		}
 
         void LateUpdate() {
             foreach (string id in agentStates.Keys) {
@@ -48,6 +63,7 @@ namespace ASAP {
 						if (!agentRequests.ContainsKey (request.id)) {
 							agentRequests.Add (request.id, request);
 							Debug.Log ("Added agent request: " + request.id);
+							nextWorldUpdate = Time.time + 3.0f;
 						} else {
 							Debug.LogWarning ("Double Request for same ID....");
 						}
@@ -108,9 +124,21 @@ namespace ASAP {
             }
         }
 
-        public void OnAgentInitialized(ASAPAgent agent) {
-            agents.Add(agent.GetAgentSpec().id, agent);
+		public void OnAgentInitialized(ASAPAgent agent) {
+			if (agents.ContainsKey (agent.GetAgentSpec ().id)) {
+				Debug.LogWarning ("Agent with id " + agent.GetAgentSpec ().id + " already known. Ignored.");
+			} else {
+				agents.Add (agent.GetAgentSpec ().id, agent);
+			}
         }
+
+		public void OnWorldObjectInitialized(VJoint worldObject) {
+			if (worldObjects.ContainsKey (worldObject.id)) {
+				Debug.LogWarning ("WorldObject with id "+worldObject.id+" already known. Ignored.");
+			} else {
+				worldObjects.Add (worldObject.id, worldObject);
+			}
+		}
 
         void OnApplicationQuit() {
             middleware.Close();

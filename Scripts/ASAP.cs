@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using LitJsonUnity;
 
 namespace ASAP {
 
@@ -131,13 +133,15 @@ namespace ASAP {
         public static AgentState Parse(string id, BinaryReader br) {
             int numBones = br.ReadInt32();
             Vector3[] positions = new Vector3[numBones];
-            Quaternion[] rotations = new Quaternion[numBones];
+			Quaternion[] rotations = new Quaternion[numBones];
+			Debug.Log ("numBones: " + numBones);
             for (int b = 0; b < numBones; b++) {
                 positions[b] = ReadWriteHelper.ReadVector(br);
                 rotations[b] = ReadWriteHelper.ReadQuaternion(br);
             }
 
             int numFaceTargets = br.ReadInt32();
+			Debug.Log ("numFaceTargets: " + numFaceTargets);
             float[] faceTargets = new float[numFaceTargets];
             for (int f = 0; f < numFaceTargets; f++) {
                 faceTargets[f] = br.ReadSingle();
@@ -161,6 +165,31 @@ namespace ASAP {
             }
         }
     }
+
+	public class WorldUpdate {
+
+		public WorldUpdate() {
+		
+		}
+
+		public static string WriteUpdate(Dictionary<string,VJoint> worldObjects) {
+			StringBuilder sb = new StringBuilder();
+			JsonWriter jWriter = new JsonWriter(sb);
+			jWriter.WriteObjectStart();
+				jWriter.WritePropertyName("worldUpdate");
+				jWriter.WriteObjectStart();
+					jWriter.WritePropertyName("objects");
+					jWriter.WriteObjectStart();
+					foreach (KeyValuePair<string,VJoint> kvp in worldObjects) {
+						jWriter.WritePropertyName(kvp.Key);
+						jWriter.Write(System.Convert.ToBase64String (kvp.Value.GetTransformBytes()));
+					}
+					jWriter.WriteObjectEnd();
+				jWriter.WriteObjectEnd();
+			jWriter.WriteObjectEnd();
+			return sb.ToString ();
+		}
+	}
 
     public class AgentSpec {
 
@@ -281,6 +310,21 @@ namespace ASAP {
             this.rotation = rotation;
         }
 
+		public byte[] GetTransformBytes() {
+			using (MemoryStream stream = new MemoryStream ())
+			using (BinaryWriter bw = new BinaryWriter(stream)) {
+				bw.Write((float)-position.x);  // FLOAT  x
+				bw.Write((float)position.y);  // FLOAT  y
+				bw.Write((float)position.z);  // FLOAT  z
+				bw.Write((float)-rotation.w);  // FLOAT  qw
+				bw.Write((float)-rotation.x);  // FLOAT  qx
+				bw.Write((float)rotation.y);  // FLOAT  qy
+				bw.Write((float)rotation.z);  // FLOAT  qz
+				bw.Flush();
+				return stream.ToArray();
+			}
+		}
+
         public BinaryWriter WriteBytes(BinaryWriter bw) {
             ReadWriteHelper.WriteASCIIString(bw, id);
             if (parent == null) ReadWriteHelper.WriteASCIIString(bw, "");
@@ -302,6 +346,5 @@ namespace ASAP {
         void Initialize();
         void SetAgentState(AgentState agentState);
     }
-
 
 }
