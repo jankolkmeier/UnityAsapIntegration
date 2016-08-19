@@ -1,5 +1,6 @@
 ﻿using Apache.NMS;
 using Apache.NMS.Util;
+using Apache.NMS.Stomp;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
@@ -20,7 +21,7 @@ public class STOMPMiddleware : IMiddleware  {
 	Thread apolloReaderThread;
 
 	AutoResetEvent semaphore = new AutoResetEvent(false);
-	System.TimeSpan receiveTimeout = System.TimeSpan.FromMilliseconds(100);
+	System.TimeSpan receiveTimeout = System.TimeSpan.FromMilliseconds(250);
 
 	Queue<string> readMessageQueue;
 	private object _readMessageQueueLock = new object();
@@ -88,6 +89,7 @@ public class STOMPMiddleware : IMiddleware  {
 
 		apolloWriterThread = new Thread(new ThreadStart(ApolloWriter));
 		apolloWriterThread.Start();
+
 		apolloReaderThread = new Thread(new ThreadStart(ApolloReader));
 		apolloReaderThread.Start();
 	}
@@ -96,7 +98,7 @@ public class STOMPMiddleware : IMiddleware  {
 		try {
 			IDestination destination_Write = SessionUtil.GetDestination(session, topicWrite);
 			IMessageProducer producer = session.CreateProducer(destination_Write);
-			producer.DeliveryMode = MsgDeliveryMode.Persistent;
+			producer.DeliveryMode = MsgDeliveryMode.NonPersistent;
 			producer.RequestTimeout = receiveTimeout;
 			Debug.Log("Apollo Ready to write.");
 			while (networkOpen) {
@@ -105,9 +107,13 @@ public class STOMPMiddleware : IMiddleware  {
 					lock (_writeMessageQueueLock) {
 						msg = writeMessageQueue.Dequeue();
 					}
-					if (msg.Length > 0) producer.Send(session.CreateTextMessage(msg));
+					try {
+						if (msg.Length > 0) producer.Send(session.CreateTextMessage(msg));
+					} catch (RequestTimedOutException rte) {
+						Debug.Log("Timeout " + rte);
+						continue;
+					} 
 				}
-				Thread.Sleep(100); // A bit high for feedback...
 			}
 		} catch (System.Exception e) {
 			Debug.Log("ApolloWriter Exception " + e);
