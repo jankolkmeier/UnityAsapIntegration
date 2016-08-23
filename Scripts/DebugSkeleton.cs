@@ -7,6 +7,8 @@ public class DebugSkeleton : MonoBehaviour {
 	public Color color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
 	private Animator animator;
 
+	public string ignore = "Adjust";
+
 	// Use this for initialization
 	void Start () {
 		animator = GetComponent<Animator> ();
@@ -27,9 +29,11 @@ public class DebugSkeleton : MonoBehaviour {
 		if (t == null) return;
         foreach (Transform child in t) {
             //if (child.name[0] == '_') continue;
-			Debug.DrawLine(t.position, child.position, color);
-            DrawToChilds(child);
-            DrawLocalCOS(child);
+			if (!child.name.Contains (ignore)) {
+				Debug.DrawLine (t.position, child.position, color);
+				DrawToChilds (child);
+				DrawLocalCOS (child);
+			}
 		}
 	}
 

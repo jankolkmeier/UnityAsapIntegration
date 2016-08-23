@@ -121,6 +121,7 @@ namespace ASAP {
         public string id;
         public Vector3[] positions;
         public Quaternion[] rotations;
+
         public float[] faceTargetValues;
 
         AgentState(string id, Vector3[] positions, Quaternion[] rotations, float[] faceTargetValues) {
@@ -291,21 +292,26 @@ namespace ASAP {
 	 */
     public class VJoint {
         public string id;
+		public string hAnimName;
         public VJoint parent;
         public Vector3 position;
         public Quaternion rotation;
 
-        public VJoint(string name) : this(name, null, Vector3.zero, Quaternion.identity) { }
+		public VJoint(string name) : this(name, "", null, Vector3.zero, Quaternion.identity) { }
+		public VJoint(string name, Vector3 position, Quaternion rotation) : this(name, "", null, position, rotation) { }
+		public VJoint(string name, Vector3 position, Quaternion rotation, VJoint parent) : this(name, "", parent, position, rotation) { }
+		public VJoint(string name, string hAnimName) : this(name, hAnimName, null, Vector3.zero, Quaternion.identity) { }
+		public VJoint(string name, string hAnimName, Vector3 position, Quaternion rotation) : this(name, hAnimName, null, position, rotation) { }
+		public VJoint(string name, string hAnimName, Vector3 position, Quaternion rotation, VJoint parent) : this(name, hAnimName, parent, position, rotation) { }
 
-        public VJoint(string name, VJoint parent) : this(name, parent, Vector3.zero, Quaternion.identity) { }
-
-        public VJoint(string name, Vector3 position, Quaternion rotation) : this(name, null, position, rotation) { }
-
-        public VJoint(string name, Vector3 position, Quaternion rotation, VJoint parent) : this(name, parent, position, rotation) { }
-
-        public VJoint(string name, VJoint parent, Vector3 position, Quaternion rotation) {
+        public VJoint(string name, string hAnimName, VJoint parent, Vector3 position, Quaternion rotation) {
             this.parent = parent;
             this.id = name;
+			if (hAnimName == "") {
+				this.hAnimName = "_no_HAnim_"+name;
+			} else {
+				this.hAnimName = hAnimName;
+			}
             this.position = position;
             this.rotation = rotation;
         }
@@ -329,7 +335,10 @@ namespace ASAP {
             ReadWriteHelper.WriteASCIIString(bw, id);
             if (parent == null) ReadWriteHelper.WriteASCIIString(bw, "");
             else ReadWriteHelper.WriteASCIIString(bw, parent.id);
-            bw.Write((float)-position.x);  // FLOAT  x
+
+			ReadWriteHelper.WriteASCIIString(bw, hAnimName);
+            
+			bw.Write((float)-position.x);  // FLOAT  x
             bw.Write((float)position.y);  // FLOAT  y
             bw.Write((float)position.z);  // FLOAT  z
             bw.Write((float)-rotation.w);  // FLOAT  qw
@@ -343,7 +352,7 @@ namespace ASAP {
 
     public interface IASAPAgent {
         AgentSpec GetAgentSpec();
-        void Initialize();
+		void Initialize();
         void SetAgentState(AgentState agentState);
     }
 

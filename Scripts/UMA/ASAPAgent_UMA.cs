@@ -2,41 +2,112 @@
 using System.Collections.Generic;
 using UMA.PoseTools;
 using UMA;
+using System.Collections;
 
 namespace ASAP { 
 
     public class ASAPAgent_UMA : ASAPAgent {
 
         ExpressionPlayer ep;
+		TwistBones twistBones;
+
+		public Dictionary<string, string> HAnimMappingDefaults_UMA = new Dictionary<string, string> {
+			{ "HumanoidRoot", HAnimMapping.HumanoidRoot },
+			{ "Hips", HAnimMapping.vl5 },
+			{ "LowerBack", HAnimMapping.vt10 },
+			{ "Spine", HAnimMapping.vt6 },
+			{ "Spine1", HAnimMapping.vt1 },
+			{ "Neck", HAnimMapping.vc4 },
+			{ "Head", HAnimMapping.skullbase },
+			{ "RightForeArmTwist", HAnimMapping.r_forearm_roll },
+			{ "LeftForeArmTwist", HAnimMapping.l_forearm_roll },
+			{ "LeftEye", "_LeftEye" },  // Include because child of actual eye bones are below these non-hanim parents
+			{ "RightEye", "_LeftEye" } // ... (and we're otherwise skipping non-hanim bones and their children)
+		};
+
+
+		// The UMA parent of the hip-bone is "Position", and allways grounded to floor.
+		// We can't just add a new bone inbetween without breaking other things.
+		// Instead, we create this "Virtual Bone" next to the position bone
+		// And use it as if it was parent to Hips...
+		Transform positionBone;
 
         float[] expressionControlValues;
 
-        void Awake() {
+		void Awake() {
+			foreach (KeyValuePair<string,string> kvp in HAnimMappingDefaults_UMA) {
+				HAnimMappingDefaults.Add (kvp.Key, kvp.Value);
+			}
         }
 
-        void Start () {
+		void Start () {
+			Debug.Log ("ASAPAgent_UMA Start()");
 	    }
 	
 	    void Update () {
         }
 
-        public void UMAConfigure(UMAData umaData) {
-            animator = umaData.animator;
-            ep = umaData.GetComponent<ExpressionPlayer>();
-            expressionControlValues = new float[ExpressionPlayer.PoseCount];
-            poseHandler = new HumanPoseHandler(animator.avatar, transform);
-        }
+		public void UMAConfigure(UMAData umaData) {
+			Debug.Log ("ASAPAgent_UMA UMAConfigure()");
+			animator = umaData.animator;
+			ep = umaData.GetComponent<ExpressionPlayer>();
+			expressionControlValues = new float[ExpressionPlayer.PoseCount];
+			poseHandler = new HumanPoseHandler(animator.avatar, transform);
 
-        public override void Initialize() {
+			Transform head = umaData.GetBoneGameObject ("Head").transform;
+			Transform skulltop = head.FindChild ("skulltop");
+			if (skulltop == null) {
+				skulltop = new GameObject ("skulltop").transform;
+				skulltop.rotation = Quaternion.identity;
+				skulltop.parent = head;
+				skulltop.localPosition = new Vector3 (-0.225f, 0.0f, 0.0f);
+			}
 
+			Transform LeftToeBase = umaData.GetBoneGameObject ("LeftToeBase").transform;
+			Transform l_forefoot_tip = LeftToeBase.FindChild ("l_forefoot_tip");
+			if (l_forefoot_tip == null) {
+				l_forefoot_tip = new GameObject ("l_forefoot_tip").transform;
+				l_forefoot_tip.parent = LeftToeBase;
+				l_forefoot_tip.localRotation = Quaternion.identity;
+				l_forefoot_tip.localPosition = new Vector3 (-0.1f, 0.0f, 0.0f);
+			}
+
+			Transform RightToeBase = umaData.GetBoneGameObject ("RightToeBase").transform;
+			Transform r_forefoot_tip = RightToeBase.FindChild ("r_forefoot_tip");
+			if (r_forefoot_tip == null) {
+				r_forefoot_tip = new GameObject ("r_forefoot_tip").transform;
+				r_forefoot_tip.parent = RightToeBase;
+				r_forefoot_tip.localRotation = Quaternion.identity;
+				r_forefoot_tip.localPosition = new Vector3 (-0.1f, 0.0f, 0.0f);
+			}
+
+			positionBone = umaData.GetBoneGameObject ("Position").transform;
+			humanoidRoot = new GameObject ("HumanoidRoot").transform;
+			humanoidRoot.position = umaData.GetBoneGameObject ("Hips").transform.position - new Vector3(0f, 0.025f, 0f);
+			humanoidRoot.parent = positionBone;
+			humanoidRoot.localRotation = Quaternion.identity;
+			twistBones = GetComponentInChildren<TwistBones> ();
+			umaData.GetBoneGameObject ("Hips").transform.parent = humanoidRoot;
+			Initialize ();
+			umaData.GetBoneGameObject ("Hips").transform.parent = positionBone;
+		}
+
+		public override void Initialize() {
+			Debug.Log("Initializing ASAPAgent_UMA "+id);
+			AddMecanimToHAnimDefaults ();
             if (retarget != null) {
-                bones = GetBoneList(retarget.transform);
-            } else if (rootBone != null) {
-                bones = GetBoneList(rootBone);
-            } else {
-                bones = GetBoneList(transform);
-            }
-            VJoint[] vJoints = GenerateVJoints();
+                GetBoneList(retarget.transform);
+            } else if (humanoidRoot != null) {
+				GetBoneList(humanoidRoot);
+				Debug.Log("....using specified humanoidRoot ");
+			} else {
+				Debug.Log("....using transform ");
+                GetBoneList(transform);
+			}
+			AlignBones ();
+			AlignCos ();
+			VJoint[] vJoints = GenerateVJoints();
+
 			List<IFaceTarget> faceTargets = new List<IFaceTarget>();
 			faceTargets.Add(new ExpressionPlayerFaceTarget("Surprise", new ExpressionControlMapping(new string[] { "midBrowUp_Down", "rightBrowUp_Down", "leftBrowUp_Down", "leftEyeOpen_Close", "rightEyeOpen_Close" }, new float[] { 1.0f, 1.0f, 1.0f, 0.6f, 0.6f })));
 			faceTargets.Add(new ExpressionPlayerFaceTarget("Aggressive", new ExpressionControlMapping(new string[] { "midBrowUp_Down", "leftLowerLipUp_Down", "rightLowerLipUp_Down", "leftUpperLipUp_Down", "rightUpperLipUp_Down", "jawOpen_Close" }, new float[] { -1.0f, -0.3f, -0.3f, 0.4f, 0.4f, 0.1f })));
@@ -45,15 +116,27 @@ namespace ASAP {
 				faceTargets.Add(new ExpressionPlayerFaceTarget(target, ExpressionTargetEditor.LoadMapping(target)));
             }
 
-            agentSpec = new AgentSpec(id, vJoints, faceTargets.ToArray());
-            FindObjectOfType<ASAPManager>().OnAgentInitialized(this);
+			agentSpec = new AgentSpec(id, vJoints, faceTargets.ToArray());
+			Debug.Log("UMA Agent initialized, id=" + this.agentSpec.id + " Bones: " + this.agentSpec.skeleton.Length + " faceControls: " + this.agentSpec.faceTargets.Length);
+            
+			FindObjectOfType<ASAPManager>().OnAgentInitialized(this);
         }
 
         public override void SetAgentState(AgentState agentState) {
-            for (int b = 0; b < agentState.rotations.Length; b++) {
-                //bones[b].localPosition = agentState.positions[b];
-                bones[b].localRotation = agentState.rotations[b];
-            }
+			for (int b = 0; b < agentState.rotations.Length; b++) {
+				if (b == 0) { // Humanoid Root
+					bones [b].position = agentState.positions [b];
+					bones[b].localRotation = qInit[b] * RGi[b] * agentState.rotations[b] * RG[b];
+					positionBone.position = new Vector3 (bones [b].position.x, 0.0f, bones [b].position.z);
+					// TODO: orientation facing HumanoidRoot direction
+				} else if (b == 1) { // Hip Bone
+					bones [b].position = humanoidRoot.TransformPoint(agentState.positions [b]);
+					bones[b].localRotation = qInit[b] * RGi[b] * agentState.rotations[b] * RG[b];
+				} else {
+					bones[b].localRotation = qInit[b] * RGi[b] * agentState.rotations[b] * RG[b];
+				}
+				//bones[b].localRotation = agentState.rotations[b];
+			}
 
             if (retarget != null) { 
                 retarget.StorePose();
@@ -63,9 +146,6 @@ namespace ASAP {
 
             float[] zeroes = new float[ExpressionPlayer.PoseCount];
             expressionControlValues = zeroes;
-            // keep a "touched" array of faceControls that were touched?
-
-			// only handle the ECM values.
 
             for (int f = 0; f < agentState.faceTargetValues.Length; f++) {
                 if (Mathf.Approximately(agentState.faceTargetValues[f], 0.0f)) continue;
@@ -81,6 +161,10 @@ namespace ASAP {
 
             }
             ep.Values = expressionControlValues;
+
+			if (twistBones != null) {
+				twistBones.Twist ();
+			}
         }
 	}
 
