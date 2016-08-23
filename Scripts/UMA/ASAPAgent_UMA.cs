@@ -100,6 +100,7 @@ namespace ASAP {
 			} else {
                 GetBoneList(transform);
 			}
+
 			AlignBones ();
 			AlignCos ();
 			VJoint[] vJoints = GenerateVJoints();

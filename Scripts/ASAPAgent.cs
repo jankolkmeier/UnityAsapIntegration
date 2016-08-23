@@ -194,10 +194,10 @@ namespace ASAP {
             FindObjectOfType<ASAPManager>().OnAgentInitialized(this);
         }
 
-		public void DebugVJointSkeleton() {
+		public void DebugVJointSkeleton(VJoint[] skeleton) {
 			GameObject root = new GameObject ("VJointDebug_" + id);
 			Dictionary<string, Transform> lut = new Dictionary<string, Transform> ();
-			foreach (VJoint joint in agentSpec.skeleton) {
+			foreach (VJoint joint in skeleton) {
 				GameObject bone = new GameObject (joint.id);
 				if (joint.parent == null) {
 					bone.transform.parent = root.transform;
