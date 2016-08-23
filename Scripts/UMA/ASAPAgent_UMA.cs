@@ -41,14 +41,12 @@ namespace ASAP {
         }
 
 		void Start () {
-			Debug.Log ("ASAPAgent_UMA Start()");
 	    }
 	
 	    void Update () {
         }
 
 		public void UMAConfigure(UMAData umaData) {
-			Debug.Log ("ASAPAgent_UMA UMAConfigure()");
 			animator = umaData.animator;
 			ep = umaData.GetComponent<ExpressionPlayer>();
 			expressionControlValues = new float[ExpressionPlayer.PoseCount];
@@ -99,9 +97,7 @@ namespace ASAP {
                 GetBoneList(retarget.transform);
             } else if (humanoidRoot != null) {
 				GetBoneList(humanoidRoot);
-				Debug.Log("....using specified humanoidRoot ");
 			} else {
-				Debug.Log("....using transform ");
                 GetBoneList(transform);
 			}
 			AlignBones ();

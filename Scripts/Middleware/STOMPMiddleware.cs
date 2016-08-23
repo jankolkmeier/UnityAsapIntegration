@@ -100,7 +100,6 @@ public class STOMPMiddleware : IMiddleware  {
 			IMessageProducer producer = session.CreateProducer(destination_Write);
 			producer.DeliveryMode = MsgDeliveryMode.NonPersistent;
 			producer.RequestTimeout = receiveTimeout;
-			Debug.Log("Apollo Ready to write.");
 			while (networkOpen) {
 				if (writeMessageQueue.Count > 0) {
 					string msg;
@@ -125,7 +124,6 @@ public class STOMPMiddleware : IMiddleware  {
 			IDestination destination_Read = SessionUtil.GetDestination(session, topicRead);
 			IMessageConsumer consumer = session.CreateConsumer(destination_Read);
 			consumer.Listener += new MessageListener(OnMessage);
-			Debug.Log("Apollo Listening.");
 			while (networkOpen) {
 				semaphore.WaitOne((int)receiveTimeout.TotalMilliseconds, true);
 			}

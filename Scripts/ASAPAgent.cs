@@ -34,7 +34,6 @@ namespace ASAP {
 			if (animator != null) {
 				poseHandler = new HumanPoseHandler (animator.avatar, transform);
 			}
-			Debug.Log ("ASAPAgent Start()");
 			Initialize();
 	    }
 	
@@ -55,8 +54,6 @@ namespace ASAP {
 
 		// Required: should be in t-pose/aligned with HAnim bones!!!
         protected void GetBoneList(Transform root) {
-			//Debug.Log ("Scrambling");
-			//ScrambleLocalRotations (root);
             List<Transform> transforms = new List<Transform>();
             AppendChildren(root, transforms);
 			bones = transforms.ToArray ();
@@ -103,7 +100,6 @@ namespace ASAP {
 				res[b] = new VJoint(bones[b].name, GetHAnimName(bones[b].name), position, rot, parent);
                 lut.Add(bones[b].name, res[b]);
             }
-			Debug.Log ("Generated VJoints for "+id);
             return res;
         }
 
@@ -178,15 +174,13 @@ namespace ASAP {
 		}
 
 		public virtual void Initialize() {
+			Debug.Log("Initializing ASAPAgent "+id);
 			AddMecanimToHAnimDefaults ();
 			if (retarget != null) {
-				Debug.Log ("Using Retarget skeleton for Agent "+id);
                 GetBoneList(retarget.transform);
             } else if (humanoidRoot != null) {
-				Debug.Log ("Using Humanoid Root for Agent "+id);
                 GetBoneList(humanoidRoot);
 			} else {
-				Debug.Log ("Using Transform Root for Agent "+id);
                 GetBoneList(transform);
             }
 
@@ -199,14 +193,6 @@ namespace ASAP {
             Debug.Log("Agent initialized, id=" + this.agentSpec.id + " Bones: " + this.agentSpec.skeleton.Length + " faceControls: " + this.agentSpec.faceTargets.Length);
             FindObjectOfType<ASAPManager>().OnAgentInitialized(this);
         }
-
-		public void _PopulateParentMap(Transform root, ref Dictionary<Transform, Transform> parentMap) {
-			parentMap.Add (root, root.parent);
-
-			foreach (Transform child in root) {
-				_PopulateParentMap (child, ref parentMap);
-			}
-		}
 
 		public void DebugVJointSkeleton() {
 			GameObject root = new GameObject ("VJointDebug_" + id);
@@ -225,27 +211,6 @@ namespace ASAP {
 
 			root.AddComponent<DebugSkeleton> ();
 
-		}
-
-		public void ScrambleLocalRotations(Transform root) {
-			Dictionary<Transform, Transform> parentMap = new Dictionary<Transform, Transform> ();
-			_PopulateParentMap (root, ref parentMap);
-
-
-			// Detach children
-			foreach (Transform b in parentMap.Keys) {
-				b.parent = null;
-			}
-
-			// Randomize
-			foreach (Transform b in parentMap.Keys) {
-				b.rotation = Quaternion.identity; //Random.rotation;
-			}
-
-			// Attach children
-			foreach (KeyValuePair<Transform,Transform> kvp in parentMap) {
-				kvp.Key.parent = kvp.Value;
-			}
 		}
     }
 }
