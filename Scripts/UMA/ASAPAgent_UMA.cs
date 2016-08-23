@@ -163,7 +163,10 @@ namespace ASAP {
             ep.Values = expressionControlValues;
 
 			if (twistBones != null) {
-				twistBones.Twist ();
+				// Don't want to change the default UMA script to have
+				// a Twist() function that is called when we want it...
+				// Better to make a clone instead.
+				//twistBones.Twist ();
 			}
         }
 	}
