@@ -1,0 +1,11 @@
+jawOpen_Close 0.26
+mouthUp_Down 0.14
+mouthNarrow_Pucker 0.62
+tongueOut 0.17
+tongueUp_Down 0.87
+leftMouthSmile_Frown -0.07
+rightMouthSmile_Frown -0.08
+leftLowerLipUp_Down 0.27
+rightLowerLipUp_Down 0.25
+leftUpperLipUp_Down 0.09
+rightUpperLipUp_Down 0.10

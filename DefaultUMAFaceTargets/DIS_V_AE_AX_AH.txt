@@ -1,0 +1,3 @@
+jawOpen_Close 0.24
+mouthUp_Down 0.27
+mouthNarrow_Pucker 0.23
