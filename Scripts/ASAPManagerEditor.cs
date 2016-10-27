@@ -9,7 +9,6 @@ public class ASAPManagerEditor : Editor {
     public override void OnInspectorGUI() {
         //ASAPManagerEditor rt = (ASAPManagerEditor)target;
         //DrawDefaultInspector();
-        
     }
 }
 #endif
