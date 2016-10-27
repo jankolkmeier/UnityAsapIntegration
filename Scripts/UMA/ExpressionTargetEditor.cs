@@ -8,15 +8,15 @@ using UMA;
 namespace ASAP {
     public class ExpressionTargetEditor : MonoBehaviour {
 
-		public static string folder = "UnityAsapIntegration/DefaultUMAFaceTargets";
+        public static string folder = "UnityAsapIntegration/DefaultUMAFaceTargets";
 
         public ExpressionPlayer ep;
         public static string INDEX_FILE = "__INDEX";
-        public string[] nonDefaultRanges = new string[] { "tongueCurl", "noseSneer", "browsIn" };
+        public string[] nonDefaultRanges = new string[] {"tongueCurl", "noseSneer", "browsIn"};
         public float[] currentTargetValues;
         public bool[] currentUseControl;
         public static string[] ExpressionTargets;
-		public static string[] ExpressionTargetDescriptions;
+        public static string[] ExpressionTargetDescriptions;
 
         public int currentlyEditing;
 
@@ -34,7 +34,8 @@ namespace ASAP {
         // Update is called once per frame
         void Update() {
             if (ep == null) {
-                ep = GetComponent<ExpressionPlayer>(); return;
+                ep = GetComponent<ExpressionPlayer>();
+                return;
             }
 
             for (int i = 0; i < ExpressionPlayer.PoseCount; i++) {
@@ -86,7 +87,7 @@ namespace ASAP {
                 lines = System.IO.File.ReadAllLines(path);
 
                 foreach (string line in lines) {
-                    string[] elems = line.Split(new char[] { ' ' }, 2);
+                    string[] elems = line.Split(new char[] {' '}, 2);
                     targetNames.Add(elems[0]);
                     targetDescriptions.Add(elems[1]);
                 }
@@ -100,14 +101,14 @@ namespace ASAP {
 
         public void SaveIndex() {
             string index = "";
-            for (int t=0; t<ExpressionTargets.Length; t++) {
+            for (int t = 0; t < ExpressionTargets.Length; t++) {
                 index += ExpressionTargets[t] + " " + ExpressionTargetDescriptions[t] + "\r\n";
             }
             System.IO.File.WriteAllText(GetFileName(INDEX_FILE), index);
         }
 
         public static string GetFileName(string name) {
-            return Application.dataPath + "/"+folder+"/" + name + ".txt";
+            return Application.dataPath + "/" + folder + "/" + name + ".txt";
         }
 
         public static ExpressionControlMapping LoadMapping(string name) {
@@ -129,7 +130,6 @@ namespace ASAP {
             }
 
             return new ExpressionControlMapping(names.ToArray(), values.ToArray());
-
         }
 
         public void LoadValues(int altLoad) {

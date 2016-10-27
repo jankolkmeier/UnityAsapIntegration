@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class MecanimRetargetingSource : MonoBehaviour {
-    
+
     Animator animator;
     HumanPoseHandler poseHandler;
     HumanPose pose;

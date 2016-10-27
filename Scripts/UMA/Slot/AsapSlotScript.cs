@@ -9,12 +9,10 @@ public class AsapSlotScript : MonoBehaviour {
 
 //    bool isConfigured = false;
 
-    public void OnCharacterBegun(UMAData umaData) {
-    }
+    public void OnCharacterBegun(UMAData umaData) {}
 
 
-    public void OnDnaApplied(UMAData umaData) {
-    }
+    public void OnDnaApplied(UMAData umaData) {}
 
     public void OnCharacterCompleted(UMAData umaData) {
         //if (isConfigured) return; // TODO: we might consider notifiying asap?
@@ -23,7 +21,7 @@ public class AsapSlotScript : MonoBehaviour {
             asapAgent = umaData.gameObject.AddComponent<ASAPAgent_UMA>();
             // need HumanoidRoot?/
         }
-		asapAgent.UMAConfigure(umaData);
-		//isConfigured = true;
-	}
+        asapAgent.UMAConfigure(umaData);
+        //isConfigured = true;
+    }
 }

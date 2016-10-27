@@ -25,13 +25,9 @@ namespace ASAP {
         }
 
 
-        public void AddTargetWindow() {
+        public void AddTargetWindow() {}
 
-        }
-
-        public void DeleteTargetWindow() {
-
-        }
+        public void DeleteTargetWindow() {}
 
         public override void OnInspectorGUI() {
             if (editor == null || editor.ep == null) return;
@@ -44,7 +40,7 @@ namespace ASAP {
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Prev")) {
                 currentSelected = editor.currentlyEditing - 1;
-                if (currentSelected < 0) currentSelected = ExpressionTargetEditor.ExpressionTargets.Length-1;
+                if (currentSelected < 0) currentSelected = ExpressionTargetEditor.ExpressionTargets.Length - 1;
             }
             if (GUILayout.Button("Next")) {
                 currentSelected = editor.currentlyEditing + 1;
@@ -65,8 +61,8 @@ namespace ASAP {
                 }
                 if (GUILayout.Button("SplitToL/R")) {
                     string current = ExpressionTargetEditor.ExpressionTargets[editor.currentlyEditing];
-                    editor.Rename(current+"_L");
-                    editor.Duplicate(current+"_R");
+                    editor.Rename(current + "_L");
+                    editor.Duplicate(current + "_R");
                 }
             } else {
                 if (GUILayout.Button("Cancel")) {
@@ -90,7 +86,6 @@ namespace ASAP {
             }
 
             if (showDeleteTarget) {
-
                 if (GUILayout.Button("Confirm")) {
                     editor.RemoveCurrentTarget();
                     showDeleteTarget = false;
@@ -111,7 +106,7 @@ namespace ASAP {
                 GUILayout.BeginHorizontal();
                 editor.currentUseControl[i] = GUILayout.Toggle(editor.currentUseControl[i], ExpressionPlayer.PoseNames[i], GUILayout.Width(130));
                 float minVal = -1.0f;
-                if (System.Array.IndexOf(editor.nonDefaultRanges, ExpressionPlayer.PoseNames[i])>-1) {
+                if (System.Array.IndexOf(editor.nonDefaultRanges, ExpressionPlayer.PoseNames[i]) > -1) {
                     minVal = 0.0f;
                 }
                 float currentTarget = GUILayout.HorizontalSlider(editor.currentTargetValues[i], minVal, 1.0f);
@@ -142,4 +137,5 @@ namespace ASAP {
         }
     }
 }
+
 #endif
