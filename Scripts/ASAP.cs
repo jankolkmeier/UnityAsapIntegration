@@ -67,6 +67,10 @@ namespace ASAP {
         public int nFaceTargets;
         public BoneTransform[] boneValues;
         public float[] faceTargetValues;
+
+        //
+        public string binaryBoneValues;
+        public string binaryFaceTargetValues;
     }
 
     [System.Serializable]
@@ -92,6 +96,19 @@ namespace ASAP {
     [System.Serializable]
     public class BoneTransform {
         public float[] t;
+
+        public BoneTransform(BinaryReader br) {
+            float x = br.ReadSingle();
+            float y = br.ReadSingle();
+            float z = br.ReadSingle();
+            float qx = br.ReadSingle();
+            float qy = br.ReadSingle();
+            float qz = br.ReadSingle();
+            float qw = br.ReadSingle();
+            // Just like when parsed in json, the transform parsed from
+            // binary does not have the handednes cos converted yet
+            t = new float[] { x, y, z, qx, qy, qz, qw };
+        }
     }
 
     public interface IFaceTarget {

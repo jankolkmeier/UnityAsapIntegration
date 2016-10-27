@@ -62,6 +62,7 @@ namespace ASAP {
             }
         }
 
+        // Maybe parsing/etc. could be done in the communication thread better?
         void ReadMessages() {
             string rawMsg = middleware.ReadMessage(); // Raw JSON string from middleware
             if (rawMsg.Length == 0) return; // will return "" if there is nothing new
@@ -74,8 +75,6 @@ namespace ASAP {
             switch (asapMessage.msgType) {
                 case AUPROT.MSGTYPE_AGENTSPECREQUEST: // AgentSpecRequest type msg comming from ASAP
                     AgentSpecRequest agentSpecRequest = JsonUtility.FromJson<AgentSpecRequest>(rawMsg);
-
-
                     if (!agentRequests.ContainsKey(agentSpecRequest.agentId)) {
                         agentRequests.Add(agentSpecRequest.agentId, agentSpecRequest);
                         Debug.Log("Added agent request: " + agentSpecRequest.agentId);
@@ -89,6 +88,33 @@ namespace ASAP {
                         if (agents[asapMessage.agentId].agentState == null)
                             agents[asapMessage.agentId].agentState = new AgentState();
                         JsonUtility.FromJsonOverwrite(rawMsg, agents[asapMessage.agentId].agentState);
+
+                        if (agents[asapMessage.agentId].agentState.binaryBoneValues.Length > 0) {
+                            Debug.LogWarning("Parsing binaryBoneValues untested");
+                            byte[] binaryMessage = System.Convert.FromBase64String(
+                                agents[asapMessage.agentId].agentState.binaryBoneValues);
+                            agents[asapMessage.agentId].agentState.boneValues =
+                                new BoneTransform[agents[asapMessage.agentId].agentState.nBones];
+                            using (BinaryReader br = new BinaryReader(new MemoryStream(binaryMessage))) {
+                                for (int b = 0; b < agents[asapMessage.agentId].agentState.nBones; b++) {
+                                    agents[asapMessage.agentId].agentState.boneValues[b] = new BoneTransform(br);
+                                }
+                            }
+                        }
+
+                        if (agents[asapMessage.agentId].agentState.binaryFaceTargetValues.Length > 0) {
+                            Debug.LogWarning("Parsing binaryFaceTargetValues untested");
+                            byte[] binaryMessage = System.Convert.FromBase64String(
+                                agents[asapMessage.agentId].agentState.binaryFaceTargetValues);
+                            agents[asapMessage.agentId].agentState.faceTargetValues =
+                                new float[agents[asapMessage.agentId].agentState.nFaceTargets];
+                            using (BinaryReader br = new BinaryReader(new MemoryStream(binaryMessage))) {
+                                for (int f = 0; f < agents[asapMessage.agentId].agentState.nFaceTargets; f++) {
+                                    agents[asapMessage.agentId].agentState.faceTargetValues[f] =
+                                        br.ReadSingle();
+                                }
+                            }
+                        }
                     } else {
                         Debug.LogWarning("Can't update state for unknown agent: " + asapMessage.agentId);
                     }
