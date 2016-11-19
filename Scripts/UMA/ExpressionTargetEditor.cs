@@ -82,6 +82,22 @@ namespace ASAP {
             string[] lines;
             List<string> targetNames = new List<string>();
             List<string> targetDescriptions = new List<string>();
+
+#if (!UNITY_EDITOR && UNITY_ANDROID)
+            string indexFile = System.IO.Path.Combine(System.IO.Path.Combine(Application.streamingAssetsPath, "DefaultUMAFaceTargets"), "__INDEX.txt");
+            WWW www = new WWW(indexFile);
+            while (!www.isDone) { }
+            if (!string.IsNullOrEmpty(www.text)) { 
+                lines = www.text.Split(new string[] { "\n", "\r\n" }, System.StringSplitOptions.RemoveEmptyEntries);
+                foreach (string line in lines) {
+                    string[] elems = line.Split(new char[] { ' ' }, 2);
+                    if (elems.Length >= 2) {
+                        targetNames.Add(elems[0]);
+                        targetDescriptions.Add(elems[1]);
+                    }
+                }
+            }
+#else
             string path = GetFileName(INDEX_FILE);
             if (System.IO.File.Exists(path)) {
                 lines = System.IO.File.ReadAllLines(path);
@@ -94,7 +110,7 @@ namespace ASAP {
             } else {
                 SaveIndex();
             }
-
+#endif
             ExpressionTargets = targetNames.ToArray();
             ExpressionTargetDescriptions = targetDescriptions.ToArray();
         }
@@ -104,7 +120,10 @@ namespace ASAP {
             for (int t = 0; t < ExpressionTargets.Length; t++) {
                 index += ExpressionTargets[t] + " " + ExpressionTargetDescriptions[t] + "\r\n";
             }
+
+#if UNITY_EDITOR
             System.IO.File.WriteAllText(GetFileName(INDEX_FILE), index);
+#endif
         }
 
         public static string GetFileName(string name) {
@@ -113,6 +132,19 @@ namespace ASAP {
 
         public static ExpressionControlMapping LoadMapping(string name) {
             string[] lines;
+
+#if (!UNITY_EDITOR && UNITY_ANDROID)
+            string mappingFile = System.IO.Path.Combine(System.IO.Path.Combine(Application.streamingAssetsPath, "DefaultUMAFaceTargets"), name + ".txt");
+            WWW www = new WWW(mappingFile);
+            while (!www.isDone) { }
+            if (!string.IsNullOrEmpty(www.text))
+            {
+                lines = www.text.Split(new string[] { "\n", "\r\n" }, System.StringSplitOptions.RemoveEmptyEntries);
+            } else
+            {
+                lines = new string[] { };
+            }
+#else
             string path = GetFileName(name);
             if (System.IO.File.Exists(path)) {
                 lines = System.IO.File.ReadAllLines(path);
@@ -120,13 +152,15 @@ namespace ASAP {
                 //System.IO.File.Create(path);
                 return null;
             }
-
+#endif
             List<string> names = new List<string>();
             List<float> values = new List<float>();
             foreach (string line in lines) {
                 string[] elems = line.Split(' ');
-                names.Add(elems[0]);
-                values.Add(float.Parse(elems[1]));
+                if (elems.Length >= 2) {
+                    names.Add(elems[0]);
+                    values.Add(float.Parse(elems[1]));
+                }
             }
 
             return new ExpressionControlMapping(names.ToArray(), values.ToArray());
@@ -178,7 +212,9 @@ namespace ASAP {
                     file += "\r\n";
                 }
             }
+#if UNITY_EDITOR
             System.IO.File.WriteAllText(GetFileName(ExpressionTargets[currentlyEditing]), file);
+#endif
         }
 
         void OnApplicationQuit() {
