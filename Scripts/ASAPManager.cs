@@ -9,7 +9,8 @@ namespace ASAP {
 
     public class ASAPManager : MonoBehaviour {
 
-        public int worldUpdateFrequency = 30;
+        public string middlewareLocation = "127.0.0.1";
+        public int worldUpdateFrequency = 15;
         float nextWorldUpdate = 0.0f;
         IMiddleware middleware;
 
@@ -22,7 +23,7 @@ namespace ASAP {
             agents = new Dictionary<string, ASAPAgent>();
             agentRequests = new Dictionary<string, AgentSpecRequest>();
             worldObjects = new Dictionary<string, VJoint>();
-            middleware = new STOMPMiddleware("stomp:tcp://127.0.0.1:61613", "topic://UnityAgentControl", "topic://UnityAgentFeedback", "admin", "password");
+            middleware = new STOMPMiddleware("stomp:tcp://"+middlewareLocation+":61613", "topic://UnityAgentControl", "topic://UnityAgentFeedback", "admin", "password");
         }
 
         void Update() {
@@ -66,7 +67,7 @@ namespace ASAP {
         void ReadMessages() {
             string rawMsg = middleware.ReadMessage(); // Raw JSON string from middleware
             if (rawMsg.Length == 0) return; // will return "" if there is nothing new
-            //Debug.Log("Raw: "+rawMsg);
+            Debug.Log("Raw: "+rawMsg);
 
             // Try to parse properties "msgType" & "agentId" if in message
             AsapMessage asapMessage = JsonUtility.FromJson<AsapMessage>(rawMsg);
@@ -77,7 +78,7 @@ namespace ASAP {
                     AgentSpecRequest agentSpecRequest = JsonUtility.FromJson<AgentSpecRequest>(rawMsg);
                     if (!agentRequests.ContainsKey(agentSpecRequest.agentId)) {
                         agentRequests.Add(agentSpecRequest.agentId, agentSpecRequest);
-                        Debug.Log("Added agent request: " + agentSpecRequest.agentId);
+                        Debug.Log("Added agent request: " + agentSpecRequest.source + ":"+agentSpecRequest.agentId);
                         nextWorldUpdate = Time.time + 3.0f; // Delay world updates while setting up new agent...
                     } else {
                         Debug.LogWarning("Already preparing agentSpec for ID " + agentSpecRequest.agentId);
@@ -125,21 +126,21 @@ namespace ASAP {
         }
 
         void HandleRequests() {
-            List<string> removals = new List<string>();
             foreach (KeyValuePair<string, AgentSpecRequest> kv in agentRequests) {
-                if (kv.Value.source == "/scene" && agents.ContainsKey(kv.Key)) {
+
+                if (!agents.ContainsKey(kv.Key)) {
+                    Debug.Log("agentId unknown: " + kv.Key);
+                }
+
+                if (kv.Value.source == "/scene") {
                     middleware.SendMessage(JsonUtility.ToJson(agents[kv.Key].agentSpec));
                     Debug.Log("Sent agent spec for id=" + kv.Key);
-                    removals.Add(kv.Key);
                 } else {
                     Debug.LogWarning("Initializing agents only possible from /scene!");
                 }
-                // RANDOM / RANDOM SET ?
             }
 
-            foreach (string removeKey in removals) {
-                agentRequests.Remove(removeKey);
-            }
+            agentRequests.Clear();
         }
 
         public void OnAgentInitialized(ASAPAgent agent) {
