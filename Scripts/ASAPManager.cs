@@ -67,7 +67,7 @@ namespace ASAP {
         void ReadMessages() {
             string rawMsg = middleware.ReadMessage(); // Raw JSON string from middleware
             if (rawMsg.Length == 0) return; // will return "" if there is nothing new
-            Debug.Log("Raw: "+rawMsg);
+            //Debug.Log("Raw: "+rawMsg);
 
             // Try to parse properties "msgType" & "agentId" if in message
             AsapMessage asapMessage = JsonUtility.FromJson<AsapMessage>(rawMsg);
