@@ -109,6 +109,19 @@ namespace ASAP {
             // binary does not have the handednes cos converted yet
             t = new float[] { x, y, z, qx, qy, qz, qw };
         }
+
+        // For debugging purpose, to simulate input from ASAP
+        // Yes, we inveret the unity cos just so it can get inverted again in the pipeline
+        public BoneTransform(Transform transform) {
+            float x = -transform.localPosition.x;
+            float y = transform.localPosition.y;
+            float z = transform.localPosition.z;
+            float qx = -transform.localRotation.x;
+            float qy = transform.localRotation.y;
+            float qz = transform.localRotation.z;
+            float qw = -transform.localRotation.w;
+            t = new float[] { x, y, z, qx, qy, qz, qw };
+        }
     }
 
     public interface IFaceTarget {

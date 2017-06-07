@@ -11,6 +11,12 @@ namespace ASAP {
         ExpressionPlayer ep;
         TwistBones twistBones;
 
+        // Hack added for logging gaze...
+        public Transform headcenter;
+        public Transform leftEye;
+        public Transform rightEye;
+        
+
         public Dictionary<string, string> HAnimMappingDefaults_UMA = new Dictionary<string, string> {
             {"HumanoidRoot", HAnimMapping.HumanoidRoot},
             {"Hips", HAnimMapping.vl5},
@@ -22,7 +28,7 @@ namespace ASAP {
             {"RightForeArmTwist", HAnimMapping.r_forearm_roll},
             {"LeftForeArmTwist", HAnimMapping.l_forearm_roll},
             {"LeftEye", "_LeftEye"}, // Include because child of actual eye bones are below these non-hanim parents
-            {"RightEye", "_LeftEye"} // ... (and we're otherwise skipping non-hanim bones and their children)
+            {"RightEye", "_RightEye"} // ... (and we're otherwise skipping non-hanim bones and their children)
         };
 
 
@@ -51,7 +57,7 @@ namespace ASAP {
             poseHandler = new HumanPoseHandler(animator.avatar, transform);
 
             Transform head = umaData.GetBoneGameObject("Head").transform;
-            Transform skulltop = head.FindChild("skulltop");
+            Transform skulltop = head.Find("skulltop");
             if (skulltop == null) {
                 skulltop = new GameObject("skulltop").transform;
                 skulltop.rotation = Quaternion.identity;
@@ -59,8 +65,33 @@ namespace ASAP {
                 skulltop.localPosition = new Vector3(-0.225f, 0.0f, 0.0f);
             }
 
+            headcenter = head.Find("headcenter_LOG");
+            if (headcenter == null) {
+                headcenter = new GameObject("headcenter_LOG").transform;
+                headcenter.rotation = Quaternion.identity;
+                headcenter.parent = head;
+                headcenter.localPosition = new Vector3(-0.115f, 0.0f, 0.0f);
+            }
+
+            leftEye = head.Find("leftEye_LOG");
+            if (leftEye == null) {
+                leftEye = new GameObject("leftEye_LOG").transform;
+                leftEye.rotation = Quaternion.identity;
+                leftEye.parent = head.Find("LeftEye").Find("LeftEyeGlobe");
+                leftEye.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+            }
+
+            rightEye = head.Find("rightEye_LOG");
+            if (rightEye == null) {
+                rightEye = new GameObject("rightEye_LOG").transform;
+                rightEye.rotation = Quaternion.identity;
+                rightEye.parent = head.Find("RightEye").Find("RightEyeGlobe");
+                rightEye.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
+            }
+
+
             Transform LeftToeBase = umaData.GetBoneGameObject("LeftToeBase").transform;
-            Transform l_forefoot_tip = LeftToeBase.FindChild("l_forefoot_tip");
+            Transform l_forefoot_tip = LeftToeBase.Find("l_forefoot_tip");
             if (l_forefoot_tip == null) {
                 l_forefoot_tip = new GameObject("l_forefoot_tip").transform;
                 l_forefoot_tip.parent = LeftToeBase;
@@ -69,7 +100,7 @@ namespace ASAP {
             }
 
             Transform RightToeBase = umaData.GetBoneGameObject("RightToeBase").transform;
-            Transform r_forefoot_tip = RightToeBase.FindChild("r_forefoot_tip");
+            Transform r_forefoot_tip = RightToeBase.Find("r_forefoot_tip");
             if (r_forefoot_tip == null) {
                 r_forefoot_tip = new GameObject("r_forefoot_tip").transform;
                 r_forefoot_tip.parent = RightToeBase;
@@ -119,6 +150,10 @@ namespace ASAP {
             Debug.Log("UMA Agent initialized, id=" + this.agentSpec.agentId + " Bones: " + this.agentSpec.skeleton.Length + " faceControls: " + this.agentSpec.faceTargets.Length);
 
             FindObjectOfType<ASAPManager>().OnAgentInitialized(this);
+
+            if (debug) {
+                CreateManualAnimationRig();
+            }
         }
 
         public override void ApplyAgentState() {
@@ -139,8 +174,10 @@ namespace ASAP {
                     // Humanoid Root
                     bones[b].position = newPosition;
                     bones[b].localRotation = qInit[b] * RGi[b] * newRotation * RG[b];
-                    positionBone.position = new Vector3(bones[b].position.x, 0.0f, bones[b].position.z);
+                    //positionBone.position = new Vector3(bones[b].position.x, 0.0f, bones[b].position.z);
+                    // The above caused double x/y translation as position is also added to hip bone...
                     // TODO: orientation facing HumanoidRoot direction
+                    positionBone.localPosition = new Vector3(0.0f, 0.0f, 0.0f);
                 } else if (b == 1) {
                     // Hip Bone
                     bones[b].position = humanoidRoot.TransformPoint(newPosition);

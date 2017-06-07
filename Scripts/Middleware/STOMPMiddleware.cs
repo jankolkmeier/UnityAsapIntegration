@@ -13,6 +13,8 @@ public class STOMPMiddleware : IMiddleware {
     private string user;
     private string pass;
 
+    //bool durable;
+    bool onlyLast;
     bool networkOpen;
     ISession session;
     IConnectionFactory factory;
@@ -29,12 +31,13 @@ public class STOMPMiddleware : IMiddleware {
     Queue<string> writeMessageQueue;
     private object _writeMessageQueueLock = new object();
 
-    public STOMPMiddleware(string address, string topicRead, string topicWrite, string user, string pass) {
+    public STOMPMiddleware(string address, string topicRead, string topicWrite, string user, string pass, bool onlyLast) {
         this.topicRead = topicRead;
         this.topicWrite = topicWrite;
         this.address = address;
         this.user = user;
         this.pass = pass;
+        this.onlyLast = onlyLast;
 
         readMessageQueue = new Queue<string>();
         writeMessageQueue = new Queue<string>();
@@ -50,7 +53,7 @@ public class STOMPMiddleware : IMiddleware {
 
     public string ReadMessage() {
         if (readMessageQueue.Count > 0) {
-            while (readMessageQueue.Count > 1) readMessageQueue.Dequeue();
+            while (onlyLast && readMessageQueue.Count > 1) readMessageQueue.Dequeue();
             lock (_readMessageQueueLock) {
                 return readMessageQueue.Dequeue();
             }
@@ -75,8 +78,8 @@ public class STOMPMiddleware : IMiddleware {
 
     void STOMPStart() {
         try {
-            System.Uri connecturi = new System.Uri(address);
-            Debug.Log("Apollo connecting to " + connecturi);
+            System.Uri connecturi = new System.Uri("stomp:"+address);
+            Debug.Log("Apollo connecting to " + connecturi+ " ("+ address+")");
             factory = new NMSConnectionFactory(connecturi);
             // NOTE: ensure the nmsprovider-activemq.config file exists in the executable folder.
             connection = factory.CreateConnection(user, pass);
@@ -121,8 +124,18 @@ public class STOMPMiddleware : IMiddleware {
 
     void ApolloReader() {
         try {
-            IDestination destination_Read = SessionUtil.GetDestination(session, topicRead);
+            //IDestination destination_Read = SessionUtil.GetDestination(session, topicRead);
+            //destination_Read
+            ITopic destination_Read = SessionUtil.GetTopic(session, topicRead);
             IMessageConsumer consumer = session.CreateConsumer(destination_Read);
+            Debug.Log("Apollo subscribing to " + destination_Read);
+            /*
+            IMessageConsumer consumer;
+            if (durable) {
+                consumer = session.CreateConsumer(destination_Read);
+            } else {
+                consumer = session.CreateDurableConsumer(destination_Read, "test", null, false);
+            }*/
             consumer.Listener += new MessageListener(OnMessage);
             while (networkOpen) {
                 semaphore.WaitOne((int) receiveTimeout.TotalMilliseconds, true);

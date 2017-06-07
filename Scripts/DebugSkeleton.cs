@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [ExecuteInEditMode]
 public class DebugSkeleton : MonoBehaviour {
     public float cosScale = 0.05f;
     public Color color = new Color(1.0f, 0.0f, 0.0f, 1.0f);
+
     private Animator animator;
 
     public string ignore = "Adjust";

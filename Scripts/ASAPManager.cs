@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace ASAP {
 
@@ -23,7 +22,7 @@ namespace ASAP {
             agents = new Dictionary<string, ASAPAgent>();
             agentRequests = new Dictionary<string, AgentSpecRequest>();
             worldObjects = new Dictionary<string, VJoint>();
-            middleware = new STOMPMiddleware("stomp:tcp://"+middlewareLocation+":61613", "topic://UnityAgentControl", "topic://UnityAgentFeedback", "admin", "password");
+            middleware = new STOMPMiddleware("tcp://"+middlewareLocation+":61613", "topic://UnityAgentControl", "topic://UnityAgentFeedback", "admin", "password", true);
         }
 
         void Update() {
@@ -85,6 +84,7 @@ namespace ASAP {
                     }
                     break;
                 case AUPROT.MSGTYPE_AGENTSTATE:
+                    if (!agents.ContainsKey(asapMessage.agentId) || agents[asapMessage.agentId].manualAnimation) break;
                     if (agents.ContainsKey(asapMessage.agentId)) {
                         if (agents[asapMessage.agentId].agentState == null)
                             agents[asapMessage.agentId].agentState = new AgentState();
@@ -130,6 +130,7 @@ namespace ASAP {
 
                 if (!agents.ContainsKey(kv.Key)) {
                     Debug.Log("agentId unknown: " + kv.Key);
+                    continue;
                 }
 
                 if (kv.Value.source == "/scene") {

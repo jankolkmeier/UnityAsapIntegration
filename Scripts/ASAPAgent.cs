@@ -5,10 +5,13 @@ using System.Collections;
 namespace ASAP {
     public class ASAPAgent : MonoBehaviour, IASAPAgent {
         public string id;
-        public AgentState agentState;
-        public MecanimRetargetingSource retarget;
-        public Transform canonicalSkeletonRefRoot;
+        public bool debug;
         public AgentSpec agentSpec;
+        public AgentState agentState;
+        public Transform canonicalSkeletonRefRoot;
+
+        public bool manualAnimation;
+        public MecanimRetargetingSource retarget;
 
         // Will try to map according to HAnimMapping.MecanimToHAnimMap
         // Unless bone is already mapped in this dict...
@@ -164,9 +167,16 @@ namespace ASAP {
                 Transform refParentBone = FindChildRecursive(canonicalSkeletonRefRoot,
                     GetHAnimName(bones[b].parent.name));
                 if (refBone == null || refParentBone == null || refParentBone.childCount > 1) continue;
-                //Debug.Log (" Aligning: "+bones[b].parent.name+" to "+bones[b].name+" as "+refParentBone.name+" to "+refBone.name);
+                // Debug.Log (" Aligning: "+bones[b].parent.name+" to "+bones[b].name+" as "+refParentBone.name+" to "+refBone.name);
                 Vector3 srcDirection = bones[b].parent.position - bones[b].position;
                 Vector3 targetDirection = refParentBone.position - refBone.position;
+
+                // Those odd feet... the HAnim has an extremely odd/high ankle, causing ankles and toes to
+                // come out horribly odd with this procedure
+                if (refParentBone.name == "r_ankle" || refParentBone.name == "l_ankle")
+                {
+                    srcDirection.y = targetDirection.y;
+                }
                 Quaternion alignRot = Quaternion.FromToRotation(srcDirection, targetDirection);
                 bones[b].parent.rotation = alignRot * bones[b].parent.rotation;
             }
@@ -188,17 +198,40 @@ namespace ASAP {
 
             VJoint[] vJoints = GenerateVJoints();
             IFaceTarget[] faceTargets = new IFaceTarget[0] {};
-            this.agentSpec = new AgentSpec(id, vJoints, faceTargets);
+            agentSpec = new AgentSpec(id, vJoints, faceTargets);
             Debug.Log("Agent initialized, id=" + this.agentSpec.agentId + " Bones: " + this.agentSpec.skeleton.Length +
                       " faceControls: " + this.agentSpec.faceTargets.Length);
             FindObjectOfType<ASAPManager>().OnAgentInitialized(this);
+            if (debug) {
+                CreateManualAnimationRig();
+            }
         }
 
-        public void DebugVJointSkeleton(VJoint[] skeleton) {
-            GameObject root = new GameObject("VJointDebug_" + id);
+        public void CreateManualAnimationRig() {
+            Dictionary<string, Transform> hAnimLUT = DebugVJointSkeleton(agentSpec.skeleton);
+            if (!hAnimLUT.ContainsKey("HumanoidRoot")) {
+                Debug.LogWarning("Cannot create ManualAnimationRig because Skeleton does not have HumanoidRoot");
+            }
+
+            Transform humanoidRoot = hAnimLUT["HumanoidRoot"];
+            Transform rigParent = humanoidRoot.parent;
+            rigParent.name = "ManualAnimationRig_" + id;
+            rigParent.transform.rotation = transform.rotation;
+            rigParent.transform.position = transform.position + transform.right * 0.5f;
+            ManualAnimationRig rig = rigParent.gameObject.AddComponent<ManualAnimationRig>();
+            rig.Initialize(this, humanoidRoot, hAnimLUT);
+        }
+
+        // Names should be HANIM!!
+        public Dictionary<string, Transform> DebugVJointSkeleton(VJoint[] skeleton) {
+            GameObject root = new GameObject("VJoints_" + id);
             Dictionary<string, Transform> lut = new Dictionary<string, Transform>();
+            Dictionary<string, Transform> hAnimLUT = new Dictionary<string, Transform>();
             foreach (VJoint joint in skeleton) {
-                GameObject bone = new GameObject(joint.id);
+                GameObject bone = new GameObject(joint.hAnimName);
+                if (!hAnimLUT.ContainsKey(joint.hAnimName))
+                    hAnimLUT.Add(joint.hAnimName, bone.transform);
+                else Debug.LogWarning("Already in LUT: " + joint.id + " as " + joint.hAnimName);
                 if (joint.parent == null) {
                     bone.transform.parent = root.transform;
                 } else {
@@ -209,7 +242,9 @@ namespace ASAP {
                 lut.Add(joint.id, bone.transform);
             }
 
-            root.AddComponent<DebugSkeleton>();
+            DebugSkeleton res = root.AddComponent<DebugSkeleton>();
+            res.color = new Color(255, 255, 0);
+            return hAnimLUT;
         }
     }
 }
